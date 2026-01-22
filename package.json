@@ -1,0 +1,11 @@
+{
+  "name": "summary-visualizer",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel dev",
+    "build": "pnpm --filter \"./**\" build"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

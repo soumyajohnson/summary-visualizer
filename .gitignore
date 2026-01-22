@@ -1,0 +1,102 @@
+########################################
+# OS / Editor
+########################################
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+########################################
+# Environment variables / secrets
+########################################
+.env
+.env.*
+!.env.example
+
+########################################
+# Node / Frontend (Next.js)
+########################################
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+.next/
+out/
+dist/
+coverage/
+.vercel/
+
+########################################
+# React Flow / Diagram exports
+########################################
+*.svg
+*.png
+*.pdf
+*.pptx
+
+########################################
+# Python / Backend (FastAPI)
+########################################
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+.venv/
+venv/
+ENV/
+env/
+
+pip-wheel-metadata/
+.eggs/
+*.egg-info/
+.eggs/
+
+########################################
+# Python build / test artifacts
+########################################
+build/
+dist/
+htmlcov/
+.coverage
+.coverage.*
+.pytest_cache/
+
+########################################
+# Logs
+########################################
+*.log
+
+########################################
+# Database / local persistence
+########################################
+*.db
+*.sqlite
+*.sqlite3
+
+########################################
+# Node tools (layout engine)
+########################################
+backend/tools/node_modules/
+backend/tools/package-lock.json
+
+########################################
+# Temporary / generated files
+########################################
+tmp/
+temp/
+.cache/
+
+########################################
+# GitHub Actions artifacts
+########################################
+*.tgz
+
+########################################
+# Misc
+########################################
+nohup.out

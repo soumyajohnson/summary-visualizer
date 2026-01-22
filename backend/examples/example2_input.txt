@@ -1,0 +1,1 @@
+The user logs in. The system fetches user data from the database. If the user is an admin, it shows the admin dashboard. Otherwise, it shows the regular user dashboard.

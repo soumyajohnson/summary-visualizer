@@ -1,0 +1,20 @@
+{
+    "nodes": [
+        { "id": "n1", "text": "Customer Places Order", "kind": "start" },
+        { "id": "n2", "text": "Validate Payment", "kind": "process" },
+        { "id": "n3", "text": "Payment Successful?", "kind": "decision" },
+        { "id": "n4", "text": "Send Order to Warehouse", "kind": "process" },
+        { "id": "n5", "text": "Send Confirmation Email", "kind": "process" },
+        { "id": "n6", "text": "Send Failure Notification", "kind": "process" },
+        { "id": "n7", "text": "End", "kind": "end" }
+    ],
+    "edges": [
+        { "from": "n1", "to": "n2" },
+        { "from": "n2", "to": "n3" },
+        { "from": "n3", "to": "n4", "text": "Yes" },
+        { "from": "n4", "to": "n5" },
+        { "from": "n3", "to": "n6", "text": "No" },
+        { "from": "n5", "to": "n7" },
+        { "from": "n6", "to": "n7" }
+    ]
+}

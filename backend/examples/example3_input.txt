@@ -1,0 +1,1 @@
+A customer places an order. The system validates the payment. If payment is successful, it sends the order to the warehouse for fulfillment and sends a confirmation email to the customer. If payment fails, it sends a failure notification.

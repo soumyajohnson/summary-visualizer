@@ -1,0 +1,20 @@
+{
+  "nodes": [
+    { "id": "start", "text": "Start", "kind": "start" },
+    { "id": "user_login", "text": "User Logs In", "kind": "process" },
+    { "id": "fetch_data", "text": "Fetch User Data", "kind": "data" },
+    { "id": "is_admin", "text": "Is User Admin?", "kind": "decision" },
+    { "id": "show_admin_dash", "text": "Show Admin Dashboard", "kind": "process" },
+    { "id": "show_user_dash", "text": "Show User Dashboard", "kind": "process" },
+    { "id": "end", "text": "End", "kind": "end" }
+  ],
+  "edges": [
+    { "from": "start", "to": "user_login" },
+    { "from": "user_login", "to": "fetch_data" },
+    { "from": "fetch_data", "to": "is_admin" },
+    { "from": "is_admin", "to": "show_admin_dash", "text": "Yes" },
+    { "from": "is_admin", "to": "show_user_dash", "text": "No" },
+    { "from": "show_admin_dash", "to": "end" },
+    { "from": "show_user_dash", "to": "end" }
+  ]
+}

@@ -1,0 +1,1 @@
+Check email. If it's a bill, pay it. If not, archive it. Then check for more email.

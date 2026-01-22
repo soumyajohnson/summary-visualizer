@@ -1,0 +1,21 @@
+{
+  "nodes": [
+    { "id": "start", "text": "Start", "kind": "start" },
+    { "id": "check_email", "text": "Check Email", "kind": "process" },
+    { "id": "is_bill", "text": "Is it a bill?", "kind": "decision" },
+    { "id": "pay_bill", "text": "Pay Bill", "kind": "process" },
+    { "id": "archive_email", "text": "Archive Email", "kind": "process" },
+    { "id": "more_email", "text": "More email?", "kind": "decision" },
+    { "id": "end", "text": "End", "kind": "end" }
+  ],
+  "edges": [
+    { "from": "start", "to": "check_email" },
+    { "from": "check_email", "to": "is_bill" },
+    { "from": "is_bill", "to": "pay_bill", "text": "Yes" },
+    { "from": "is_bill", "to": "archive_email", "text": "No" },
+    { "from": "pay_bill", "to": "more_email" },
+    { "from": "archive_email", "to": "more_email" },
+    { "from": "more_email", "to": "check_email", "text": "Yes" },
+    { "from": "more_email", "to": "end", "text": "No" }
+  ]
+}
