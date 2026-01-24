@@ -7,7 +7,7 @@ load_dotenv()
 
 class GeminiClient:
     """A wrapper for the Google Gemini API client."""
-    def __init__(self, model_name: str = "gemini-pro"):
+    def __init__(self, model_name: str = "gemini-2.5-flash"):
         api_key = os.getenv("GOOGLE_API_KEY")
         if not api_key:
             raise ValueError("The GOOGLE_API_KEY environment variable is not set. Please add it to a .env file in the `backend` directory.")

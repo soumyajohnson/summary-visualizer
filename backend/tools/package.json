@@ -1,0 +1,10 @@
+{
+  "name": "layout-engine",
+  "version": "1.0.0",
+  "description": "ELK-based layout engine for summary-visualizer",
+  "main": "layout_engine.js",
+  "private": true,
+  "dependencies": {
+    "elkjs": "^0.8.2"
+  }
+}

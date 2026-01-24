@@ -1,27 +1,31 @@
 ### Running the Backend
 
-1.  Navigate to the `backend` directory.
-2.  Create a virtual environment and activate it:
-    ```sh
-    # On macOS/Linux
-    python3 -m venv venv
-    source venv/bin/activate
+**IMPORTANT**: These commands should be run from the project's root directory (`D:\Somi Projects\summary-visualizer`), not from within the `venv` or `backend` directory.
 
+1.  Open your terminal in the project root directory.
+
+2.  Create a virtual environment inside the `backend` folder and activate it:
+    ```sh
     # On Windows
-    python -m venv venv
-    .\venv\Scripts\activate
+    python -m venv backend/venv
+    .\backend\venv\Scripts\activate
+
+    # On macOS/Linux
+    python3 -m venv backend/venv
+    source backend/venv/bin/activate
     ```
-3.  Install dependencies from `requirements.txt`:
+    *(This keeps the backend environment self-contained.)*
+
+3.  Install dependencies into the new virtual environment:
     ```sh
-    pip install -r requirements.txt
+    pip install -r backend/requirements.txt
     ```
-4.  Run the FastAPI server using Uvicorn:
+
+4.  Run the FastAPI server using the following command from the **project root**:
     ```sh
-    # From within the 'backend' directory
-    uvicorn app.main:app --reload --app-dir .
+    uvicorn app.main:app --reload --app-dir backend
     ```
-    - `--reload` enables auto-reload on code changes.
-    - `--app-dir .` tells Uvicorn to run from the `backend` directory, which makes `app` a discoverable package.
+    - `--app-dir backend` is the key fix: It tells Uvicorn to look for your application inside the `backend` directory.
 
 The API will be available at `http://127.0.0.1:8000`.
 

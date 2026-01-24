@@ -53,55 +53,26 @@ async def generate_diagram(request: GenerateRequest):
         print(f"An unexpected error occurred in generate_diagram: {e}")
         raise HTTPException(status_code=500, detail=f"An unexpected server error occurred.")
 
+from app.services.layout import calculate_layout, LayoutError
+
+# ... (other code)
+
 @router.post("/layout", response_model=LayoutSpec, tags=["Layout & Export"])
 async def layout_diagram(request: LayoutRequest):
     """
-    (Placeholder) Takes a diagram specification and adds layout information.
-    This simulates a layout engine positioning nodes and routing edges.
+    Takes a diagram specification and adds layout information by calling
+    an external Node.js layout engine.
     """
-    layout_nodes: List[LayoutNode] = []
-    y_pos = 100.0
-    for i, node in enumerate(request.diagram_spec.nodes):
-        layout_nodes.append(
-            LayoutNode(
-                id=node.id,
-                text=node.text,
-                kind=node.kind,
-                x=150.0 * i + 50,
-                y=y_pos,
-                width=120.0,
-                height=80.0,
-            )
-        )
-
-    layout_edges: List[LayoutEdge] = []
-    for edge in request.diagram_spec.edges:
-        from_node = next((n for n in layout_nodes if n.id == edge.from_node), None)
-        to_node = next((n for n in layout_nodes if n.id == edge.to_node), None)
-
-        points = []
-        if from_node and to_node:
-            # Simple straight line from bottom-center of source to top-center of target
-            points = [
-                (from_node.x + from_node.width / 2, from_node.y + from_node.height),
-                (to_node.x + to_node.width / 2, to_node.y),
-            ]
-        
-        layout_edges.append(
-            LayoutEdge(
-                from_node=edge.from_node,
-                to_node=edge.to_node,
-                text=edge.text,
-                points=points,
-            )
-        )
-
-    return LayoutSpec(
-        nodes=layout_nodes,
-        edges=layout_edges,
-        groups=request.diagram_spec.groups,
-        style=request.diagram_spec.style,
-    )
+    try:
+        # This is now a synchronous call, but FastAPI handles running it in a thread pool.
+        layout_spec = calculate_layout(request.diagram_spec)
+        return layout_spec
+    except LayoutError as e:
+        raise HTTPException(status_code=500, detail=f"Layout Engine Failed: {e}")
+    except Exception as e:
+        # Catch any other unexpected errors from the service
+        print(f"An unexpected error occurred in layout_diagram: {e}")
+        raise HTTPException(status_code=500, detail=f"An unexpected server error occurred during layout.")
 
 @router.post("/export/svg", response_model=str, tags=["Layout & Export"], responses={200: {"content": {"image/svg+xml": {}}}})
 async def export_svg(request: ExportRequest):
