@@ -100,3 +100,5 @@ temp/
 # Misc
 ########################################
 nohup.out
+backend/TESTING_INSTRUCTIONS.md
+frontend/INSTRUCTIONS.md

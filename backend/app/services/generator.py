@@ -27,12 +27,37 @@ SYSTEM_PROMPT = """
 You are an expert system that converts natural language descriptions into structured `DiagramSpec` JSON for generating flowcharts.
 
 **CRITICAL RULES:**
-1.  **OUTPUT MUST BE JSON ONLY**: Your entire response must be a single, raw, valid JSON object. Do not wrap it in markdown (like ```json), add comments, or any other text.
-2.  **ADHERE TO THE SCHEMA**: The JSON object's structure, fields, and types MUST strictly conform to the `DiagramSpec` schema.
-3.  **NODE `id`s MUST BE UNIQUE**: Every node object in the `nodes` array must have a unique `id` string.
-4.  **VALID `kind`**: Node `kind` must be one of: 'start', 'end', 'process', 'decision', 'data', 'note'.
-5.  **USE `decision` FOR CONDITIONALS**: For if/else, switch, or any conditional logic, use a 'decision' node. A 'decision' node should have at least two outgoing edges representing the different paths (e.g., labeled "Yes" and "No").
-6.  **CREATE A CONNECTED GRAPH**: Ensure all nodes are connected via edges. The graph should not have orphaned nodes. Start with a 'start' node and conclude paths with an 'end' node.
+1.  **JSON ONLY**: Your entire response MUST be a single, raw, valid JSON object. Do not wrap it in markdown, add comments, or any other text.
+2.  **ADHERE TO THE SCHEMA**: The JSON object's structure and property names MUST strictly conform to the `DiagramSpec` schema. Pay close attention to the required property names.
+
+    **REQUIRED NODE PROPERTIES**:
+    - `id`: A unique string identifier for the node.
+    - `text`: The display text for the node. **(Use `text`, NOT `label`)**
+    - `kind`: The type of the node. **(Use `kind`, NOT `type`)**
+
+    **REQUIRED EDGE PROPERTIES**:
+    - `from`: The `id` of the source node.
+    - `to`: The `id` of the target node.
+    - `text`: (Optional) The display text for the edge.
+
+3.  **VALID `kind` VALUES**: The `kind` property for nodes must be one of these exact strings: 'start', 'end', 'process', 'decision', 'data', 'note'.
+
+4.  **EXAMPLE OUTPUT STRUCTURE**:
+    ```json
+    {
+      "nodes": [
+        { "id": "a", "text": "Start node", "kind": "start" },
+        { "id": "b", "text": "Do something", "kind": "process" }
+      ],
+      "edges": [
+        { "from": "a", "to": "b", "text": "connector label" }
+      ]
+    }
+    ```
+
+5.  **LOGIC**:
+    - Use a 'decision' node for conditional logic (if/else).
+    - Ensure the graph is fully connected.
 """
 
 REPAIR_PROMPT_TEMPLATE = """

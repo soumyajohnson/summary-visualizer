@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional, Tuple, Set
+from typing import List, Optional, Tuple, Set, Dict
 from pydantic import BaseModel, Field, validator
 
 MAX_NODES = 40
@@ -53,9 +53,13 @@ class LayoutNode(Node):
     y: float
     width: float
     height: float
+    locked: Optional[bool] = None
 
 class LayoutEdge(Edge):
     points: List[Tuple[float, float]]
+
+class LayoutConstraints(BaseModel):
+    locked_nodes: Optional[Dict[str, Dict[str, float]]] = Field(None, alias="lockedNodes")
 
 class LayoutSpec(DiagramSpec):
     nodes: List[LayoutNode]

@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Response
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
-from app.models.spec import DiagramSpec, LayoutSpec, LayoutNode, LayoutEdge
+from app.models.spec import DiagramSpec, LayoutSpec, LayoutNode, LayoutEdge, LayoutConstraints
 
-# Request/Response Models
+# ... (other code)
+
 class AnalysisRequest(BaseModel):
     text: str
 
@@ -17,9 +18,11 @@ class GenerateRequest(BaseModel):
 
 class LayoutRequest(BaseModel):
     diagram_spec: DiagramSpec
+    constraints: Optional[LayoutConstraints] = None
 
 class ExportRequest(BaseModel):
     layout_spec: LayoutSpec
+
 
 router = APIRouter(prefix="/v1")
 
@@ -61,11 +64,12 @@ from app.services.layout import calculate_layout, LayoutError
 async def layout_diagram(request: LayoutRequest):
     """
     Takes a diagram specification and adds layout information by calling
-    an external Node.js layout engine.
+    an external Node.js layout engine. Can optionally respect constraints,
+    such as locked node positions.
     """
     try:
-        # This is now a synchronous call, but FastAPI handles running it in a thread pool.
-        layout_spec = calculate_layout(request.diagram_spec)
+        # Pass both the spec and any potential constraints to the layout service.
+        layout_spec = calculate_layout(request.diagram_spec, request.constraints)
         return layout_spec
     except LayoutError as e:
         raise HTTPException(status_code=500, detail=f"Layout Engine Failed: {e}")

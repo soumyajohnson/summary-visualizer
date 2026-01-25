@@ -1,160 +1,166 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import ReactFlow, {
-  Elements,
+import { useState, useCallback } from 'react';
+import { 
+    QueryClient, 
+    QueryClientProvider, 
+    useMutation,
+    UseMutationResult,
+} from '@tanstack/react-query';
+import {
   Node,
   Edge,
-  useNodesState,
-  useEdgesState,
-  MiniMap,
-  Controls,
-  Background,
-  useReactFlow,
-} from "reactflow";
-import "reactflow/dist/style.css";
-import ELK from "elkjs/lib/elk.bundled.js";
-import axios from "axios";
-import { DiagramSpec } from "shared";
-import { ReactFlowProvider } from "reactflow";
-import { toSvg } from 'reactflow';
+  applyNodeChanges,
+  applyEdgeChanges,
+  addEdge,
+  OnNodesChange,
+  OnEdgesChange,
+  OnConnect,
+  NodeChange,
+} from 'reactflow';
 
-const elk = new ELK();
+import TextPane from '@/components/TextPane';
+import DiagramPane from '@/components/DiagramPane';
+import { generateAndLayoutDiagram, tidyLayout } from '@/lib/api';
+import { toReactFlow, fromReactFlow } from '@/lib/specAdapters';
+import type { LayoutSpec, DiagramSpec, LayoutConstraints } from 'shared';
 
-const layoutNodes = async (nodes: Node[], edges: Edge[]): Promise<Node[]> => {
-  const graph = {
-    id: "root",
-    layoutOptions: {
-      "elk.algorithm": "layered",
-      "elk.direction": "DOWN",
-      "elk.spacing.nodeNode": "80",
-    },
-    children: nodes.map((node) => ({
-      ...node,
-      width: 150,
-      height: 50,
-    })),
-    edges: edges.map((edge) => ({
-      id: edge.id,
-      sources: [edge.source],
-      targets: [edge.target],
-    })),
-  };
+const queryClient = new QueryClient();
 
-  const layout = await elk.layout(graph);
-  return nodes.map((node) => {
-    const layoutNode = layout.children?.find((n) => n.id === node.id);
-    return {
-      ...node,
-      position: {
-        x: layoutNode?.x ?? 0,
-        y: layoutNode?.y ?? 0,
-      },
-    };
-  });
+// Helper type for the tidy mutation
+type TidyPayload = {
+  diagramSpec: DiagramSpec;
+  constraints: LayoutConstraints;
 };
 
-function downloadSvg(svg) {
-  const blob = new Blob([svg], { type: 'image/svg+xml' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'flowchart.svg';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
+function Editor() {
+  // State for the text input
+  const [text, setText] = useState(
+    'A customer places an order. The system validates the payment. If payment is successful, it sends the order to the warehouse for fulfillment and sends a confirmation email to the customer. If payment fails, it sends a failure notification.'
+  );
 
-function Flow() {
-  const { getNodes, getEdges } = useReactFlow();
-  const [text, setText] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  // State for React Flow nodes and edges
+  const [nodes, setNodes] = useState<Node[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
 
+  // --- State Change Handlers for React Flow ---
+  const onNodesChange: OnNodesChange = useCallback(
+    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+    [],
+  );
+  const onEdgesChange: OnEdgesChange = useCallback(
+    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+    [],
+  );
+  const onConnect: OnConnect = useCallback(
+    (connection) => setEdges((eds) => addEdge(connection, eds)),
+    [],
+  );
 
-  const generateFlowchart = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.post<DiagramSpec>(
-        "http://localhost:8000/api/generate",
-        { text }
-      );
-      const { nodes, edges } = response.data;
-      const layoutedNodes = await layoutNodes(nodes, edges);
-      setNodes(layoutedNodes);
-      setEdges(edges);
-    } catch (error) {
-      console.error("Error generating flowchart:", error);
-    } finally {
-      setLoading(false);
-    }
+  // --- Node Interaction Logic ---
+  const onNodeDoubleClick = useCallback((event: React.MouseEvent, node: Node) => {
+    setNodes((nds) =>
+      nds.map((n) => {
+        if (n.id === node.id) {
+          return { ...n, data: { ...n.data, locked: !n.data.locked } };
+        }
+        return n;
+      })
+    );
+  }, []);
+  
+  // --- API Mutations ---
+  const handleMutationSuccess = (data: LayoutSpec) => {
+    const { nodes: rfNodes, edges: rfEdges } = toReactFlow(data);
+    // When a new layout is applied, we need to preserve the locked status
+    // of nodes from the old state if they still exist.
+    setNodes(currentNodes => {
+        const lockedStatusMap = new Map(currentNodes.map(n => [n.id, n.data.locked]));
+        return rfNodes.map(newNode => ({
+            ...newNode,
+            data: {
+                ...newNode.data,
+                locked: lockedStatusMap.get(newNode.id) || false,
+            }
+        }));
+    });
+    setEdges(rfEdges);
   };
 
-  const exportSvg = () => {
-    toSvg(getNodes(), getEdges(), {
-      width: 1024,
-      height: 768,
-    }).then(downloadSvg);
+  const handleMutationError = (error: Error) => {
+    console.error('Operation failed:', error);
+    alert(`Error: ${error.message}`);
+  };
+
+  const generateMutation = useMutation<LayoutSpec, Error, string>({
+    mutationFn: generateAndLayoutDiagram,
+    onSuccess: (data) => {
+        // For a full generation, reset everything
+        const { nodes: rfNodes, edges: rfEdges } = toReactFlow(data);
+        setNodes(rfNodes);
+        setEdges(rfEdges);
+    },
+    onError: handleMutationError,
+  });
+  
+  const tidyMutation = useMutation<LayoutSpec, Error, TidyPayload>({
+    mutationFn: (payload) => tidyLayout(payload.diagramSpec, payload.constraints),
+    onSuccess: handleMutationSuccess,
+    onError: handleMutationError,
+  });
+
+  // --- Button Click Handlers ---
+  const handleGenerate = () => {
+    if (!text.trim()) {
+      alert('Please enter a description for the diagram.');
+      return;
+    }
+    generateMutation.mutate(text);
+  };
+
+  const handleTidy = () => {
+    if (nodes.length === 0) return;
+    const { diagramSpec, constraints } = fromReactFlow(nodes, edges);
+    tidyMutation.mutate({ diagramSpec, constraints });
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Text to Flowchart
-        </p>
+    <main className="flex h-screen w-screen font-sans">
+      <div className="w-1/4 h-full max-w-sm">
+        <TextPane
+          text={text}
+          setText={setText}
+          onGenerate={handleGenerate}
+          onTidy={handleTidy}
+          isGenerating={generateMutation.isLoading}
+          isTidying={tidyMutation.isLoading}
+        />
       </div>
-
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-        <div className="w-[800px] h-[600px] border border-gray-300 rounded-lg">
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            fitView
-          >
-            <Controls />
-            <MiniMap />
-            <Background />
-          </ReactFlow>
-        </div>
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-        <div className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30">
-          <textarea
-            className="w-full bg-transparent border border-gray-300 rounded-lg p-2"
-            rows={5}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Enter text to generate a flowchart..."
-          />
-          <button
-            className="mt-4 w-full rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600 disabled:bg-gray-400"
-            onClick={generateFlowchart}
-            disabled={loading}
-          >
-            {loading ? "Generating..." : "Generate Flowchart"}
-          </button>
-          <button
-            className="mt-4 w-full rounded-lg bg-green-500 px-4 py-2 text-white hover:bg-green-600"
-            onClick={exportSvg}
-          >
-            Export as SVG
-          </button>
-        </div>
+      <div className="w-3/4 h-full" onDoubleClick={(e) => {
+          const target = e.target as HTMLElement;
+          const nodeElement = target.closest('.react-flow__node');
+          if(nodeElement) {
+              const nodeId = nodeElement.getAttribute('data-id');
+              const node = nodes.find(n => n.id === nodeId);
+              if (node) onNodeDoubleClick(e as any, node);
+          }
+      }}>
+        <DiagramPane
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+        />
       </div>
     </main>
   );
 }
 
-export default function Home() {
+export default function Page() {
   return (
-    <ReactFlowProvider>
-      <Flow />
-    </ReactFlowProvider>
+    <QueryClientProvider client={queryClient}>
+      <Editor />
+    </QueryClientProvider>
   );
 }

@@ -32,6 +32,7 @@ export interface LayoutNode extends Node {
   y: number;
   width: number;
   height: number;
+  locked?: boolean;
 }
 
 export type Point = [number, number];
@@ -45,4 +46,8 @@ export interface LayoutSpec {
   edges: LayoutEdge[];
   groups?: Group[];
   style?: string;
+}
+
+export interface LayoutConstraints {
+    lockedNodes?: { [nodeId: string]: { x: number; y: number } };
 }

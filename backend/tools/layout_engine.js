@@ -1,11 +1,6 @@
 const ELK = require('elkjs');
 const elk = new ELK();
 
-/**
- * Heuristic to estimate node dimensions based on its text content.
- * @param {object} node - A node from the DiagramSpec.
- * @returns {{width: number, height: number}}
- */
 function estimateSize(node) {
     const avgCharWidth = 8;
     const paddingX = 30;
@@ -13,7 +8,7 @@ function estimateSize(node) {
     
     const minWidth = 120;
     const minHeight = 50;
-    const decisionHeight = 80; // Diamonds need more space
+    const decisionHeight = 80;
 
     const text = node.text || '';
     const lines = text.split('\n');
@@ -30,62 +25,72 @@ function estimateSize(node) {
     return { width, height };
 }
 
-/**
- * Converts a DiagramSpec into an ELK graph structure, computes the layout,
- * and transforms it back into a LayoutSpec.
- * @param {object} diagramSpec - The input diagram specification.
- * @returns {Promise<object>} - The resulting layout specification.
- */
-async function runLayout(diagramSpec) {
+async function runLayout(diagramSpec, constraints) {
+    const lockedNodes = constraints?.lockedNodes || {};
+
     const elkGraph = {
         id: 'root',
         layoutOptions: {
             'elk.algorithm': 'layered',
             'elk.direction': diagramSpec.style === 'LR' ? 'RIGHT' : 'DOWN',
-            'elk.layered.spacing.nodeNodeBetweenLayers': '80', // Vertical spacing
-            'elk.spacing.nodeNode': '60' // Horizontal spacing
+            'elk.layered.spacing.nodeNodeBetweenLayers': '80',
+            'elk.spacing.nodeNode': '60'
         },
         children: diagramSpec.nodes.map(node => {
             const size = estimateSize(node);
-            return {
+            const nodeData = {
                 id: node.id,
-                // Pass original data through for reconstruction
                 _original: node,
                 width: size.width,
                 height: size.height
             };
+            // Best-effort hint for locked nodes. ELK's layered algorithm
+            // may still adjust positions to resolve conflicts.
+            if (lockedNodes[node.id]) {
+                nodeData.x = lockedNodes[node.id].x;
+                nodeData.y = lockedNodes[node.id].y;
+            }
+            return nodeData;
         }),
         edges: diagramSpec.edges.map((edge, i) => ({
             id: `e${i}`,
             sources: [edge.from],
             targets: [edge.to],
-            // Pass original data through
             _original: edge
         }))
     };
 
     const layout = await elk.layout(elkGraph);
 
-    // Transform ELK output back to our LayoutSpec format
+    // After layout, we MUST override the positions for locked nodes
+    // to ensure they are exactly where the user placed them.
+    layout.children.forEach(node => {
+        if (lockedNodes[node.id]) {
+            node.x = lockedNodes[node.id].x;
+            node.y = lockedNodes[node.id].y;
+        }
+    });
+
     const layoutSpec = {
         nodes: layout.children.map(node => ({
             ...node._original,
             x: node.x,
             y: node.y,
             width: node.width,
-            height: node.height
+            height: node.height,
+            // Carry over the locked status
+            locked: !!lockedNodes[node.id] 
         })),
         edges: layout.edges.map(edge => {
-            // Re-find original edge data since ELK doesn't preserve it
             const { from, to, text } = edge._original;
             const points = edge.sections[0].bendPoints ? 
                 [edge.sections[0].startPoint, ...edge.sections[0].bendPoints, edge.sections[0].endPoint] : 
                 [edge.sections[0].startPoint, edge.sections[0].endPoint];
             
             return {
-                from: from,
-                to: to,
-                text: text,
+                from,
+                to,
+                text,
                 points: points.map(p => [p.x, p.y])
             };
         }),
@@ -96,9 +101,6 @@ async function runLayout(diagramSpec) {
     return layoutSpec;
 }
 
-/**
- * Main function to read from stdin, process, and write to stdout.
- */
 async function main() {
     let data = '';
     process.stdin.setEncoding('utf8');
@@ -113,8 +115,8 @@ async function main() {
     }
 
     try {
-        const diagramSpec = JSON.parse(data);
-        const layoutSpec = await runLayout(diagramSpec);
+        const { diagram_spec, constraints } = JSON.parse(data);
+        const layoutSpec = await runLayout(diagram_spec, constraints);
         process.stdout.write(JSON.stringify(layoutSpec, null, 2));
     } catch (error) {
         console.error(`Error: Layout engine failed. ${error.message}`);
