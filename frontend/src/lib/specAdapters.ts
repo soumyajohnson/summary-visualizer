@@ -3,20 +3,27 @@ import { Node, Edge } from 'reactflow';
 
 /**
  * Converts a LayoutSpec from our backend into the format required by React Flow.
+ * This adapter is now updated for the new "playful" design.
  */
 export function toReactFlow(spec: LayoutSpec): { nodes: Node[]; edges: Edge[] } {
   const nodes: Node[] = spec.nodes.map((node: SpecNode) => ({
     id: node.id,
-    type: 'custom', // Use our custom node
+    type: 'custom', // We will always use our custom node for styling
     position: { x: node.x, y: node.y },
     data: { 
       label: node.text, 
       kind: node.kind,
       locked: node.locked || false,
     },
-    style: {
-        width: node.width,
-        height: node.height,
+    // We remove direct styling here to rely on the CustomNode's CSS
+    // but keep width/height to let React Flow know the node's dimensions.
+style: {
+      width: node.width,
+      height: node.height,
+      // This is the fix: make the wrapper invisible so our custom node's styles can be seen.
+      background: 'transparent',
+      border: 'none',
+      padding: 0,
     }
   }));
 
@@ -25,8 +32,8 @@ export function toReactFlow(spec: LayoutSpec): { nodes: Node[]; edges: Edge[] } 
     source: edge.from,
     target: edge.to,
     label: edge.text,
-    type: 'smoothstep',
-    markerEnd: { type: 'arrowclosed' },
+    type: 'smoothstep', // Use smooth, curved lines
+    // No arrowhead for a softer look
   }));
 
   return { nodes, edges };
@@ -55,9 +62,7 @@ export function fromReactFlow(nodes: Node[], edges: Edge[]): { diagramSpec: Diag
   };
 
   nodes.forEach(node => {
-    // If a node is marked as locked in its data payload...
     if (node.data.locked) {
-      // ...add its current position to the constraints object.
       constraints.lockedNodes![node.id] = { x: node.position.x, y: node.position.y };
     }
   });

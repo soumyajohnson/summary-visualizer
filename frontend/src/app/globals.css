@@ -1,8 +1,55 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+
+:root {
+  --color-bg: #e6e3f3; /* A very light, slightly purplish off-white */
+  --color-text-primary: #727075; /* Dark cool gray */
+  --color-text-secondary: #4B5563; /* Medium cool gray */
+  
+  --color-indigo: #6366F1;
+  --color-tangerine: #F97316;
+  --color-magenta: #D946EF;
+  --color-sky: #38BDF8;
+  --color-emerald: #10B981;
+  
+  --shadow-soft: 0px 4px 8px -2px rgba(25, 30, 50, 0.06), 0px 2px 4px -2px rgba(25, 30, 50, 0.04);
+  --shadow-lifted: 0px 12px 20px -4px rgba(25, 30, 50, 0.08), 0px 5px 8px -5px rgba(25, 30, 50, 0.06);
+}
 
 body {
-  background-color: #fcfcfc;
-  color: #111;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+}
+
+/* --- React Flow Overrides --- */
+
+/* Edges / Connectors */
+.react-flow__edge-path {
+  stroke: #CBD5E1; /* A light gray */
+  stroke-width: 3;
+}
+
+/* Control Buttons (Zoom, Fit) */
+.react-flow__controls-button {
+  background-color: white;
+  border: 1px solid #E5E7EB;
+  box-shadow: var(--shadow-soft);
+  transition: all 0.2s ease;
+}
+.react-flow__controls-button:hover {
+  background-color: #F9FAFB;
+}
+
+/* Minimap */
+.react-flow__minimap {
+  border-radius: 1rem; /* 16px */
+  background-color: #F3F4F6;
+  box-shadow: var(--shadow-lifted);
+}
+
+/* Attribution (Pro) */
+.react-flow__attribution {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 0.5rem;
 }

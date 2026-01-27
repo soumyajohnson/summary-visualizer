@@ -7,11 +7,10 @@ import ReactFlow, {
   MiniMap,
   Node,
   Edge,
-  NodeChange,
   OnNodesChange,
   OnEdgesChange,
-  Connection,
   OnConnect,
+  BackgroundVariant,
 } from 'reactflow';
 import CustomNode from './CustomNode';
 
@@ -25,6 +24,11 @@ interface DiagramPaneProps {
   onConnect: OnConnect;
 }
 
+const defaultEdgeOptions = {
+    style: { strokeWidth: 3 },
+    type: 'smoothstep',
+};
+
 export default function DiagramPane({ 
     nodes, 
     edges, 
@@ -32,10 +36,11 @@ export default function DiagramPane({
     onEdgesChange,
     onConnect,
 }: DiagramPaneProps) {
+  // We only need to register our single custom node type
   const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
 
   return (
-    <div className="w-full h-full bg-gray-100">
+    <div className="w-full h-full bg-gray">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -43,12 +48,15 @@ export default function DiagramPane({
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
+        defaultEdgeOptions={defaultEdgeOptions}
         fitView
         proOptions={{ hideAttribution: true }}
+        // Give some padding so nodes don't touch the edge
+        fitViewOptions={{ padding: 0.1 }}
       >
         <Controls />
-        <MiniMap />
-        <Background variant="dots" gap={12} size={1} />
+        <MiniMap nodeStrokeWidth={3} zoomable pannable />
+        <Background variant={BackgroundVariant.Dots} gap={16} size={0.5} />
       </ReactFlow>
     </div>
   );

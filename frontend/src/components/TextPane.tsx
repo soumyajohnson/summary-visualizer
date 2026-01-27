@@ -13,30 +13,35 @@ export default function TextPane({ text, setText, onGenerate, onTidy, isGenerati
   const isLoading = isGenerating || isTidying;
   
   return (
-    <div className="flex flex-col h-full p-4 bg-gray-50 border-r border-gray-200 shadow-md">
-      <label htmlFor="input-text" className="text-lg font-semibold mb-2 text-gray-800">
-        Describe Process
+    <div className="flex flex-col h-full p-5 bg-white border-r border-gray-200/80 shadow-lg z-10">
+      <label htmlFor="input-text" className="text-xl font-bold mb-3 text-gray-500">
+        Flowchart Generator
       </label>
-      <textarea
-        id="input-text"
-        className="w-full flex-grow p-3 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="e.g., User logs in. If successful, show dashboard. Otherwise, show error."
-        disabled={isLoading}
-      />
-      <div className="grid grid-cols-2 gap-3 mt-4">
+      <div className="flex flex-col flex-grow">
+        <p className="text-sm text-gray-500 mb-2">
+            Describe a process, and we&apos;ll visualize it for you.
+        </p>
+        <textarea
+            id="input-text"
+            className="w-full flex-grow p-3 border border-gray-200 rounded-2xl resize-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-shadow shadow-soft"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="e.g., User logs in. If successful, show dashboard..."
+            disabled={isLoading}
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-3 pt-4">
         <button
             onClick={onGenerate}
             disabled={isLoading}
-            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors"
+            className="px-5 py-3 bg-indigo-500 text-white font-bold rounded-xl hover:bg-indigo-600 disabled:bg-indigo-300 disabled:cursor-not-allowed transition-all duration-200 shadow-soft hover:shadow-lifted"
         >
-            {isGenerating ? 'Generating...' : 'From Text'}
+            {isGenerating ? 'Generating...' : 'Generate'}
         </button>
         <button
             onClick={onTidy}
             disabled={isLoading}
-            className="px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 disabled:bg-green-400 disabled:cursor-not-allowed transition-colors"
+            className="px-5 py-3 bg-gray-700 text-white font-bold rounded-xl hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-soft hover:shadow-lifted"
         >
             {isTidying ? 'Tidying...' : 'Auto Tidy'}
         </button>

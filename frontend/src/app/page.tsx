@@ -5,7 +5,6 @@ import {
     QueryClient, 
     QueryClientProvider, 
     useMutation,
-    UseMutationResult,
 } from '@tanstack/react-query';
 import {
   Node,
@@ -16,7 +15,6 @@ import {
   OnNodesChange,
   OnEdgesChange,
   OnConnect,
-  NodeChange,
 } from 'reactflow';
 
 import TextPane from '@/components/TextPane';
@@ -132,8 +130,8 @@ function Editor() {
           setText={setText}
           onGenerate={handleGenerate}
           onTidy={handleTidy}
-          isGenerating={generateMutation.isLoading}
-          isTidying={tidyMutation.isLoading}
+          isGenerating={generateMutation.isPending}
+          isTidying={tidyMutation.isPending}
         />
       </div>
       <div className="w-3/4 h-full" onDoubleClick={(e) => {
@@ -142,7 +140,7 @@ function Editor() {
           if(nodeElement) {
               const nodeId = nodeElement.getAttribute('data-id');
               const node = nodes.find(n => n.id === nodeId);
-              if (node) onNodeDoubleClick(e as any, node);
+              if (node) onNodeDoubleClick(e as React.MouseEvent, node);
           }
       }}>
         <DiagramPane

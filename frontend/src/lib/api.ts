@@ -2,7 +2,7 @@ import axios from 'axios';
 import { DiagramSpec, LayoutSpec, LayoutConstraints } from 'shared';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8001/v1',
+  baseURL: 'http://localhost:8000/v1',
   headers: {
     'Content-Type': 'application/json',
   },
