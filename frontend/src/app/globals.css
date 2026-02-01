@@ -2,7 +2,7 @@
 
 
 :root {
-  --color-bg: #e6e3f3; /* A very light, slightly purplish off-white */
+  --color-bg: #f9e1f1; /* A very light, slightly purplish off-white */
   --color-text-primary: #727075; /* Dark cool gray */
   --color-text-secondary: #4B5563; /* Medium cool gray */
   
@@ -26,7 +26,7 @@ body {
 
 /* Edges / Connectors */
 .react-flow__edge-path {
-  stroke: #CBD5E1; /* A light gray */
+  stroke: #ebf1f7; /* A light gray */
   stroke-width: 3;
 }
 
