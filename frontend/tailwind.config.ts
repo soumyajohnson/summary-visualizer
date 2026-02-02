@@ -2,6 +2,9 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  content: [
+    './src/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
   theme: {
     extend: {
       colors: {
@@ -47,6 +50,12 @@ const config: Config = {
           light: "#FFFFFF",
           muted: "#C7D2FE",
         },
+        'navbar-pink': "#FA9DD8",
+      },
+      fontFamily: {
+        display: ['var(--font-geist-sans)'], // Use for titles and branding
+        body: ['var(--font-geist-sans)'],    // Default body font
+        mono: ['var(--font-geist-mono)'],    // Monospace font
       },
     },
   },

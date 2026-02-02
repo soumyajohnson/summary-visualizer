@@ -56,7 +56,7 @@ export default function DiagramPane({
       >
         <Controls />
         <MiniMap nodeStrokeWidth={3} zoomable pannable />
-        <Background variant={BackgroundVariant.Dots} gap={16} size={0.5} />
+        <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
       </ReactFlow>
     </div>
   );

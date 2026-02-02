@@ -15,7 +15,7 @@ const getNodeConfig = (kind: string) => {
     switch (kind) {
         case 'start':
             return {
-                gradient: 'bg-gradient-to-br from-[#22C55E] to-[#16A34A]',
+                gradient: 'bg-gradient-to-br from-[#bff9b9] to-[#20e809]',
                 Icon: PlayCircleIcon,
             };
         case 'end':

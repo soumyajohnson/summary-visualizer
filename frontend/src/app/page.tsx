@@ -123,7 +123,7 @@ function Editor() {
   };
 
   return (
-    <main className="flex h-screen w-screen font-sans">
+    <main className="flex h-full w-full font-sans">
       <div className="w-1/4 h-full max-w-sm">
         <TextPane
           text={text}
