@@ -10,12 +10,17 @@ except (ImportError, ModuleNotFoundError):
     settings = MockSettings()
 
 from app.api.routes import router as api_router
+from app.core.database import init_db
 
 app = FastAPI(
     title="Summary Visualizer API",
     description="API for converting text summaries into diagrams.",
     version="1.0.0"
 )
+
+@app.on_event("startup")
+async def on_startup():
+    await init_db()
 
 # --- Middleware ---
 

@@ -15,6 +15,7 @@ class AnalysisResponse(BaseModel):
 class GenerateRequest(BaseModel):
     text: str
     diagram_type: str = "flowchart"
+    session_id: Optional[str] = None
 
 class IngestRequest(BaseModel):
     text: str
@@ -31,6 +32,18 @@ class ExportRequest(BaseModel):
 router = APIRouter(prefix="/v1")
 
 from app.services.ingestion import process_ingestion
+from app.core.database import get_session_history as fetch_db_history
+
+@router.get("/session/{session_id}/history", tags=["Knowledge Base"])
+async def get_history(session_id: str):
+    """
+    Returns the past diagrams for a given session.
+    """
+    try:
+        history = await fetch_db_history(session_id, limit=10)
+        return history
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/ingest", tags=["Knowledge Base"])
 async def ingest_knowledge(request: IngestRequest):
@@ -68,7 +81,11 @@ async def generate_diagram(request: GenerateRequest):
         context_results = retrieve_context(request.text, top_k=3)
         context_text = "\n\n".join([res['text'] for res in context_results])
         
-        diagram_spec = await generate_diagram_spec(request.text, context=context_text)
+        diagram_spec = await generate_diagram_spec(
+            request.text, 
+            context=context_text, 
+            session_id=request.session_id
+        )
         return diagram_spec
     except DiagramGenerationError as e:
         # This is a controlled failure from our generation service

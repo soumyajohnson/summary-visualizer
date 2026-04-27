@@ -14,6 +14,8 @@ from langgraph.graph import StateGraph, END
 class AgentState(TypedDict):
     original_text: str
     rag_context: str
+    session_id: Optional[str]
+    session_history: Optional[str]
     extraction: Optional[Dict[str, Any]]
     diagram_spec: Optional[Dict[str, Any]]
     validation_errors: Optional[str]
@@ -43,11 +45,14 @@ async def extraction_agent(state: AgentState):
     """Extracts key entities and relationships from text."""
     print("--- EXTRACTION AGENT ---")
     
+    history_context = f"\nPrevious diagrams in this session: {state['session_history']}" if state['session_history'] else ""
+    
     prompt = f"""
     You are an analyst. Extract topics, steps, dependencies, and decision points from the text.
     Focus on logic and flow.
     
     Relevant Context: {state['rag_context']}
+    {history_context}
     User Text: {state['original_text']}
     {f"Previous Critique: {state['critique_feedback']}" if state['critique_feedback'] else ""}
     
@@ -179,13 +184,24 @@ app_graph = workflow.compile()
 class DiagramGenerationError(Exception):
     pass
 
-async def generate_diagram_spec(text: str, context: str = "") -> DiagramSpec:
+from app.core.database import get_session_history, save_diagram_to_session
+
+async def generate_diagram_spec(text: str, context: str = "", session_id: str = None) -> DiagramSpec:
     """
     Invokes the LangGraph multi-agent workflow to generate a DiagramSpec.
     """
+    # Load session history if session_id is provided
+    history_text = ""
+    if session_id:
+        history = await get_session_history(session_id)
+        if history:
+            history_text = json.dumps(history, indent=2)
+
     initial_state: AgentState = {
         "original_text": text,
         "rag_context": context,
+        "session_id": session_id,
+        "session_history": history_text,
         "extraction": None,
         "diagram_spec": None,
         "validation_errors": None,
@@ -196,10 +212,21 @@ async def generate_diagram_spec(text: str, context: str = "") -> DiagramSpec:
     }
     
     try:
-        final_state = await app_graph.ainvoke(initial_state)
+        # LangSmith tracing configuration
+        config = {
+            "tags": [f"session:{session_id}" if session_id else "no-session"],
+            "metadata": {"text_len": len(text)}
+        }
+        
+        final_state = await app_graph.ainvoke(initial_state, config=config)
         
         if final_state.get("final_spec"):
-            return final_state["final_spec"]
+            spec = final_state["final_spec"]
+            # Save to session history if successful
+            if session_id:
+                await save_diagram_to_session(session_id, spec.dict())
+            
+            return spec
         
         if final_state.get("validation_errors"):
             raise DiagramGenerationError(f"Failed to generate valid schema: {final_state['validation_errors']}")

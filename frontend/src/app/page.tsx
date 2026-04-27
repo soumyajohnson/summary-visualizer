@@ -19,6 +19,7 @@ import {
 
 import TextPane from '@/components/TextPane';
 import DiagramPane from '@/components/DiagramPane';
+import IngestPanel from '@/components/IngestPanel';
 import { generateAndLayoutDiagram, tidyLayout } from '@/lib/api';
 import { toReactFlow, fromReactFlow } from '@/lib/specAdapters';
 import type { LayoutSpec, DiagramSpec, LayoutConstraints } from 'shared';
@@ -32,6 +33,9 @@ type TidyPayload = {
 };
 
 function Editor() {
+  // Unique session ID for the current browser session
+  const [sessionId] = useState(() => `session-${Math.random().toString(36).substr(2, 9)}`);
+
   // State for the text input
   const [text, setText] = useState(
     'A customer places an order. The system validates the payment. If payment is successful, it sends the order to the warehouse for fulfillment and sends a confirmation email to the customer. If payment fails, it sends a failure notification.'
@@ -91,7 +95,7 @@ function Editor() {
   };
 
   const generateMutation = useMutation<LayoutSpec, Error, string>({
-    mutationFn: generateAndLayoutDiagram,
+    mutationFn: (text) => generateAndLayoutDiagram({ text, sessionId }),
     onSuccess: (data) => {
         // For a full generation, reset everything
         const { nodes: rfNodes, edges: rfEdges } = toReactFlow(data);
@@ -123,16 +127,19 @@ function Editor() {
   };
 
   return (
-    <main className="flex h-full w-full font-sans">
-      <div className="w-1/4 h-full max-w-sm">
-        <TextPane
-          text={text}
-          setText={setText}
-          onGenerate={handleGenerate}
-          onTidy={handleTidy}
-          isGenerating={generateMutation.isPending}
-          isTidying={tidyMutation.isPending}
-        />
+    <main className="flex h-full w-full font-sans bg-slate-900">
+      <div className="w-1/4 h-full max-w-sm flex flex-col border-r border-white/10 overflow-hidden">
+        <IngestPanel />
+        <div className="flex-1 overflow-y-auto">
+            <TextPane
+                text={text}
+                setText={setText}
+                onGenerate={handleGenerate}
+                onTidy={handleTidy}
+                isGenerating={generateMutation.isPending}
+                isTidying={tidyMutation.isPending}
+            />
+        </div>
       </div>
       <div className="w-3/4 h-full" onDoubleClick={(e) => {
           const target = e.target as HTMLElement;

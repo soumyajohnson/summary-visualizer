@@ -10,12 +10,15 @@ const apiClient = axios.create({
 
 /**
  * Generates a diagram spec from text and then computes its layout.
- * @param text The natural language text to convert into a diagram.
+ * @param params Object containing the text and optional session_id.
  * @returns A promise that resolves to the final LayoutSpec.
  */
-export async function generateAndLayoutDiagram(text: string): Promise<LayoutSpec> {
+export async function generateAndLayoutDiagram({ text, sessionId }: { text: string; sessionId?: string }): Promise<LayoutSpec> {
   try {
-    const generateResponse = await apiClient.post('/generate', { text });
+    const generateResponse = await apiClient.post('/generate', { 
+      text, 
+      session_id: sessionId 
+    });
     const diagramSpec: DiagramSpec = generateResponse.data;
 
     // Call layout with no constraints for initial generation

@@ -6,3 +6,5 @@ jsonschema
 chromadb
 langgraph
 langchain-google-genai
+sqlalchemy
+aiosqlite
