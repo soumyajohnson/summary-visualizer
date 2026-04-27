@@ -25,7 +25,7 @@ interface DiagramPaneProps {
 }
 
 const defaultEdgeOptions = {
-    style: { strokeWidth: 3 },
+    style: { strokeWidth: 2, stroke: '#C4A0C4' },
     type: 'smoothstep',
 };
 
@@ -40,7 +40,7 @@ export default function DiagramPane({
   const nodeTypes = useMemo(() => ({ custom: CustomNode }), []);
 
   return (
-    <div className="w-full h-full bg-gray">
+    <div className="w-full h-full bg-transparent">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -51,12 +51,26 @@ export default function DiagramPane({
         defaultEdgeOptions={defaultEdgeOptions}
         fitView
         proOptions={{ hideAttribution: true }}
-        // Give some padding so nodes don't touch the edge
         fitViewOptions={{ padding: 0.1 }}
       >
         <Controls />
-        <MiniMap nodeStrokeWidth={3} zoomable pannable />
-        <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
+        <MiniMap 
+            nodeStrokeWidth={3} 
+            zoomable 
+            pannable 
+            maskColor="rgba(253, 246, 240, 0.6)"
+            style={{
+                backgroundColor: '#FFF0F8',
+                border: '1px solid #E0C0D8',
+                borderRadius: '1rem'
+            }}
+        />
+        <Background 
+            variant={BackgroundVariant.Dots} 
+            gap={16} 
+            size={1} 
+            color="#E0C8E8" 
+        />
       </ReactFlow>
     </div>
   );

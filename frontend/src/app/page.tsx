@@ -127,8 +127,8 @@ function Editor() {
   };
 
   return (
-    <main className="flex h-full w-full font-sans bg-slate-900">
-      <div className="w-1/4 h-full max-w-sm flex flex-col border-r border-white/10 overflow-hidden">
+    <main className="flex h-full w-full font-sans bg-transparent">
+      <div className="w-1/4 h-full max-w-sm flex flex-col border-r border-[#E8D5E8] overflow-hidden">
         <IngestPanel />
         <div className="flex-1 overflow-y-auto">
             <TextPane

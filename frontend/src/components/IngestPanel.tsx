@@ -34,16 +34,16 @@ export default function IngestPanel() {
     };
 
     return (
-        <div className="border-b border-white/10 bg-white/5">
+        <div className="border-b border-[#E8D5E8] bg-white/40 backdrop-blur-md">
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex w-full items-center justify-between p-4 text-sm font-medium text-white/70 hover:text-white"
+                className="flex w-full items-center justify-between p-4 font-caveat text-xl font-medium text-[#7C5C8A] hover:text-[#9B5E9B] transition-colors"
             >
                 <span>Knowledge Base Ingestion</span>
                 {isOpen ? (
-                    <ChevronUpIcon className="h-4 w-4" />
+                    <ChevronUpIcon className="h-5 w-5" />
                 ) : (
-                    <ChevronDownIcon className="h-4 w-4" />
+                    <ChevronDownIcon className="h-5 w-5" />
                 )}
             </button>
             
@@ -52,22 +52,22 @@ export default function IngestPanel() {
                     <textarea
                         value={text}
                         onChange={(e) => setText(e.target.value)}
-                        placeholder="Paste document text here..."
-                        className="h-32 w-full rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white placeholder:text-white/30 focus:border-sky-500/50 focus:outline-none"
+                        placeholder="Once upon a time..."
+                        className="h-32 w-full rounded-xl border border-[#D4B8D4] bg-[#FFF8FF] p-3 font-sans text-sm text-[#5C3040] placeholder:text-[#C4A0C4] focus:border-[#C8A2C8] focus:outline-none transition-all shadow-sm"
                     />
                     <input
                         type="text"
                         value={source}
                         onChange={(e) => setSource(e.target.value)}
-                        placeholder="Source Label (e.g. Policy Manual)"
-                        className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-sm text-white placeholder:text-white/30 focus:border-sky-500/50 focus:outline-none"
+                        placeholder="Source Label (e.g. Secret Journal)"
+                        className="w-full rounded-xl border border-[#D4B8D4] bg-[#FFF8FF] p-3 font-sans text-sm text-[#5C3040] placeholder:text-[#C4A0C4] focus:border-[#C8A2C8] focus:outline-none transition-all shadow-sm"
                     />
                     <button
                         onClick={handleIngest}
                         disabled={isIngesting}
-                        className="w-full rounded-xl bg-sky-500 py-3 text-sm font-semibold text-white transition-all hover:bg-sky-400 disabled:opacity-50"
+                        className="w-full rounded-xl bg-gradient-to-r from-[#C8A2C8] to-[#E8A0B0] py-3 font-caveat text-xl font-semibold text-white shadow-soft transition-all hover:bg-sky-400 disabled:opacity-50"
                     >
-                        {isIngesting ? 'Ingesting...' : 'Add to Knowledge Base'}
+                        {isIngesting ? 'Saving...' : 'Add to Knowledge Base'}
                     </button>
                 </div>
             )}
