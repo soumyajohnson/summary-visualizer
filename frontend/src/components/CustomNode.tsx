@@ -15,7 +15,7 @@ const getNodeConfig = (kind: string) => {
     switch (kind) {
         case 'start':
             return {
-                gradient: 'bg-gradient-to-br from-emerald-400 to-green-500',
+                gradient: 'bg-gradient-to-br from-[#bff9b9] to-[#20e809]',
                 Icon: PlayCircleIcon,
             };
         case 'end':
@@ -25,12 +25,12 @@ const getNodeConfig = (kind: string) => {
             };
         case 'process':
             return {
-                gradient: 'bg-gradient-to-br from-indigo-400 to-blue-500',
+                gradient: 'bg-gradient-to-br from-[##FF4D8D] to-[#FF2D75]',
                 Icon: DocumentTextIcon,
             };
         case 'decision':
             return {
-                gradient: 'bg-gradient-to-br from-amber-400 to-orange-500',
+                gradient: 'bg-gradient-to-br from-[#7C5CFF] to-[#5B3FFF]',
                 Icon: QuestionMarkCircleIcon,
             };
         case 'data':

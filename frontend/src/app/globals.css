@@ -2,7 +2,7 @@
 
 
 :root {
-  --color-bg: #e6e3f3; /* A very light, slightly purplish off-white */
+  --color-bg: #f9e1f1; /* A very light, slightly purplish off-white */
   --color-text-primary: #727075; /* Dark cool gray */
   --color-text-secondary: #4B5563; /* Medium cool gray */
   
@@ -10,7 +10,7 @@
   --color-tangerine: #F97316;
   --color-magenta: #D946EF;
   --color-sky: #38BDF8;
-  --color-emerald: #10B981;
+  --color-emerald: #bff9b9;
   
   --shadow-soft: 0px 4px 8px -2px rgba(25, 30, 50, 0.06), 0px 2px 4px -2px rgba(25, 30, 50, 0.04);
   --shadow-lifted: 0px 12px 20px -4px rgba(25, 30, 50, 0.08), 0px 5px 8px -5px rgba(25, 30, 50, 0.06);
@@ -26,7 +26,7 @@ body {
 
 /* Edges / Connectors */
 .react-flow__edge-path {
-  stroke: #CBD5E1; /* A light gray */
+  stroke: #ebf1f7; /* A light gray */
   stroke-width: 3;
 }
 
