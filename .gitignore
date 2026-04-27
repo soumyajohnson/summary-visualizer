@@ -102,3 +102,4 @@ temp/
 nohup.out
 backend/TESTING_INSTRUCTIONS.md
 frontend/INSTRUCTIONS.md
+backend/data

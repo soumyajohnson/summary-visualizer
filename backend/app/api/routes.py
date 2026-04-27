@@ -16,6 +16,10 @@ class GenerateRequest(BaseModel):
     text: str
     diagram_type: str = "flowchart"
 
+class IngestRequest(BaseModel):
+    text: str
+    source_label: str
+
 class LayoutRequest(BaseModel):
     diagram_spec: DiagramSpec
     constraints: Optional[LayoutConstraints] = None
@@ -26,6 +30,19 @@ class ExportRequest(BaseModel):
 
 router = APIRouter(prefix="/v1")
 
+from app.services.ingestion import process_ingestion
+
+@router.post("/ingest", tags=["Knowledge Base"])
+async def ingest_knowledge(request: IngestRequest):
+    """
+    Ingests text into the knowledge base for RAG.
+    """
+    try:
+        num_chunks = process_ingestion(request.text, request.source_label)
+        return {"status": "success", "message": f"Ingested {num_chunks} chunks."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @router.post("/analyze", response_model=AnalysisResponse, tags=["Diagram Generation"])
 async def analyze_text(request: AnalysisRequest):
     """
@@ -35,6 +52,7 @@ async def analyze_text(request: AnalysisRequest):
     return AnalysisResponse(steps=["Step 1: Analyze user text", "Step 2: Identify key entities", "Step 3: Determine relationships"])
 
 from app.services.generator import generate_diagram_spec, DiagramGenerationError
+from app.services.vector_store import retrieve_context
 from fastapi import HTTPException
 
 # ... (other code)
@@ -43,10 +61,14 @@ from fastapi import HTTPException
 async def generate_diagram(request: GenerateRequest):
     """
     Generates a diagram specification from a text prompt using an LLM.
-    The output does not contain any layout information.
+    Uses RAG to augment the prompt with relevant context.
     """
     try:
-        diagram_spec = await generate_diagram_spec(request.text)
+        # Retrieve relevant context from knowledge base
+        context_results = retrieve_context(request.text, top_k=3)
+        context_text = "\n\n".join([res['text'] for res in context_results])
+        
+        diagram_spec = await generate_diagram_spec(request.text, context=context_text)
         return diagram_spec
     except DiagramGenerationError as e:
         # This is a controlled failure from our generation service
